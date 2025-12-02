@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String       @id @default(cuid())
+  email              String       @unique
+  password           String
+  name               String?
+  role               String       @default("USER") // Deprecated, use roles instead
+  roles              Role[]
+  instrument         String?
+  membershipNumber   String?
+  image              String?  // Base64 or URL
+  mustChangePassword Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  attendances        Attendance[]
+  attendanceHistory  AttendanceHistory[]
+  profileRequests    ProfileChangeRequest[]
+  clothingItems      ClothingItem[]
+}
+
+model ClothingItem {
+  id        String   @id @default(cuid())
+  name      String
+  image     String   // Base64
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  permissions String[] // Stored as JSON or Array depending on DB, Prisma handles String[] for Postgres
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id          String       @id @default(cuid())
+  title       String
+  date        DateTime
+  location    String?
+  description String?
+  isClosed    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  attendances Attendance[]
+  attendanceHistory  AttendanceHistory[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  status    String // "PRESENT" or "ABSENT"
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, eventId])
+}
+
+model AttendanceHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  status    String   // "PRESENT" or "ABSENT"
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+}
+
+model ProfileChangeRequest {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
+  newName       String?
+  newEmail      String?
+  newInstrument String?
+  newImage      String?  // Base64
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
