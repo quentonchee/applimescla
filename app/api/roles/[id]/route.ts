@@ -22,7 +22,10 @@ export async function GET(
             return NextResponse.json({ error: "Role not found" }, { status: 404 });
         }
 
-        return NextResponse.json(role);
+        return NextResponse.json({
+            ...role,
+            permissions: typeof role.permissions === 'string' ? JSON.parse(role.permissions) : role.permissions
+        });
     } catch (error) {
         console.error("Failed to fetch role", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -46,7 +49,7 @@ export async function PATCH(
             where: { id },
             data: {
                 name,
-                permissions,
+                permissions: JSON.stringify(permissions || []),
             },
         });
 

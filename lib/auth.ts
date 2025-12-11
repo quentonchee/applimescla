@@ -60,7 +60,16 @@ export const authOptions: NextAuthOptions = {
                 // Collect all permissions from roles
                 const roles = (user as any).roles || [];
                 const permissions = Array.from(new Set(
-                    roles.flatMap((r: any) => r.permissions || [])
+                    roles.flatMap((r: any) => {
+                        if (typeof r.permissions === 'string') {
+                            try {
+                                return JSON.parse(r.permissions);
+                            } catch {
+                                return [];
+                            }
+                        }
+                        return r.permissions || [];
+                    })
                 )) as string[];
 
                 console.log("Authorize - User:", user.email);

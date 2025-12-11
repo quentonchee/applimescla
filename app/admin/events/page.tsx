@@ -114,6 +114,27 @@ export default function EventsPage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.")) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/events/${id}`, {
+                method: "DELETE",
+            });
+
+            if (res.ok) {
+                fetchEvents();
+                router.refresh();
+            } else {
+                alert("Échec de la suppression de l'événement");
+            }
+        } catch (error) {
+            console.error("Failed to delete event", error);
+        }
+    };
+
     return (
         <div>
             {/* Edit Modal */}
@@ -286,7 +307,12 @@ export default function EventsPage() {
                                         >
                                             Modifier
                                         </button>
-                                        <button className="text-red-400 hover:text-red-300">Supprimer</button>
+                                        <button
+                                            onClick={() => handleDelete(event.id)}
+                                            className="text-red-400 hover:text-red-300"
+                                        >
+                                            Supprimer
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -314,7 +340,12 @@ export default function EventsPage() {
                                         >
                                             Modifier
                                         </button>
-                                        <button className="text-red-400 hover:text-red-300 text-sm">Supprimer</button>
+                                        <button
+                                            onClick={() => handleDelete(event.id)}
+                                            className="text-red-400 hover:text-red-300 text-sm"
+                                        >
+                                            Supprimer
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="text-sm text-gray-300 mb-1">

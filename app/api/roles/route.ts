@@ -14,7 +14,12 @@ export async function GET() {
             orderBy: { name: "asc" },
         });
 
-        return NextResponse.json(roles);
+        const parsedRoles = roles.map(role => ({
+            ...role,
+            permissions: typeof role.permissions === 'string' ? JSON.parse(role.permissions) : role.permissions
+        }));
+
+        return NextResponse.json(parsedRoles);
     } catch (error) {
         console.error("Failed to fetch roles", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -37,7 +42,7 @@ export async function POST(req: Request) {
         const role = await prisma.role.create({
             data: {
                 name,
-                permissions: permissions || [],
+                permissions: JSON.stringify(permissions || []),
             },
         });
 

@@ -126,3 +126,26 @@ export async function PATCH(
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
+
+export async function DELETE(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== "ADMIN") {
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    try {
+        await prisma.event.delete({
+            where: { id },
+        });
+
+        return new NextResponse(null, { status: 204 });
+    } catch (error) {
+        console.error("Failed to delete event", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}

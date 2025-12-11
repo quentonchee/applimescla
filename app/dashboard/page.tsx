@@ -72,6 +72,14 @@ export default function UserDashboard() {
                     </div>
                     <div className="flex gap-4">
 
+                        {(session?.user?.role === "ADMIN" || session?.user?.roles?.includes("ADMIN")) && (
+                            <Link
+                                href="/admin"
+                                className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded transition-colors text-sm font-bold"
+                            >
+                                Administration
+                            </Link>
+                        )}
                         <Link
                             href="/profile"
                             className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors text-sm font-bold"

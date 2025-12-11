@@ -24,13 +24,21 @@ export default function LoginPage() {
             if (result?.error) {
                 setError("Identifiants invalides");
             } else {
+                // Force refresh to ensure session is updated
+                router.refresh();
+
+                // Small delay to allow cookie propagation
+                await new Promise(resolve => setTimeout(resolve, 500));
+
                 const session = await getSession();
-                if (session?.user?.role === "ADMIN") {
+
+                const isAdmin = session?.user?.role === "ADMIN" || session?.user?.roles?.includes("ADMIN");
+
+                if (isAdmin) {
                     router.push("/admin");
                 } else {
                     router.push("/dashboard");
                 }
-                router.refresh();
             }
         } catch (err) {
             setError("Une erreur est survenue");

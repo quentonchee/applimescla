@@ -6,15 +6,33 @@ const prisma = new PrismaClient()
 async function main() {
     const password = await bcrypt.hash('admin123', 10)
 
+    // Create ADMIN role if it doesn't exist
+    const adminRole = await prisma.role.upsert({
+        where: { name: 'ADMIN' },
+        update: {},
+        create: {
+            name: 'ADMIN',
+            permissions: JSON.stringify(['VIEW_ADMIN', 'MANAGE_USERS', 'MANAGE_ROLES', 'MANAGE_EVENTS', 'VIEW_ATTENDANCE'])
+        }
+    })
+
     const admin = await prisma.user.upsert({
         where: { email: 'admin@example.com' },
-        update: {},
+        update: {
+            password,
+            roles: {
+                connect: { id: adminRole.id }
+            }
+        },
         create: {
             email: 'admin@example.com',
             name: 'Admin User',
             password,
-            role: 'ADMIN',
-            mustChangePassword: true,
+            role: 'ADMIN', // Legacy field
+            roles: {
+                connect: { id: adminRole.id }
+            },
+            mustChangePassword: false,
         },
     })
 
